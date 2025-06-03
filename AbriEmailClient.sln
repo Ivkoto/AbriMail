@@ -1,9 +1,33 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36127.28 d17.14
+VisualStudioVersion = 17.14.36127.28
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AbriMail.Transport", "AbriMail.Transport\AbriMail.Transport.csproj", "{31BF5A5E-9722-4415-A3B5-48F27C351728}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AbriMail.App", "AbriMail.App\AbriMail.App.csproj", "{696F0296-E215-40F5-B528-6D89913116C9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AbriMail.Web", "AbriMail.Web\AbriMail.Web.csproj", "{E1C3837F-2875-408A-B490-8FC1768BE66D}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{31BF5A5E-9722-4415-A3B5-48F27C351728}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31BF5A5E-9722-4415-A3B5-48F27C351728}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31BF5A5E-9722-4415-A3B5-48F27C351728}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31BF5A5E-9722-4415-A3B5-48F27C351728}.Release|Any CPU.Build.0 = Release|Any CPU
+		{696F0296-E215-40F5-B528-6D89913116C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{696F0296-E215-40F5-B528-6D89913116C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{696F0296-E215-40F5-B528-6D89913116C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{696F0296-E215-40F5-B528-6D89913116C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1C3837F-2875-408A-B490-8FC1768BE66D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1C3837F-2875-408A-B490-8FC1768BE66D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1C3837F-2875-408A-B490-8FC1768BE66D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1C3837F-2875-408A-B490-8FC1768BE66D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
