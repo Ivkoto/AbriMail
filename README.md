@@ -1,4 +1,4 @@
-# AbriMail
+# AbriMail <img src="AbriMail.Web/wwwroot/favicon.png" alt="AbriMail" width="32" height="32">
 
 .Net | Blazor Server Email Client (IMAP/SMTP)
 
