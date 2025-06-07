@@ -59,6 +59,7 @@
 - contains classes to connect to mail servers and execute raw IMAP and SMTP commands over TLS.
 - establishing SslStream connections, sending protocol commands, and reading server responses.
 - isolates the complexity of the IMAP/SMTP protocols from the rest of the app.
+- **Documentation:** [AbriMail.Transport README](AbriMail.Transport/README.md)
 
 **AbriMail.App (Class Library):**
 
