@@ -78,7 +78,7 @@ namespace AbriMail.Transport
             var response = await ReadResponseAsync();
 
             // Parse tagged response - confirm success
-            var lines = response.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+            var lines = response.Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries);
             var taggedLine = lines.FirstOrDefault(l => l.StartsWith(tag));
             if (taggedLine == null || !taggedLine.StartsWith($"{tag} OK"))
             {
@@ -109,7 +109,7 @@ namespace AbriMail.Transport
             await _writer!.WriteAsync(command);
             var response = await ReadResponseAsync();
 
-            var lines = response.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+            var lines = response.Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries);
 
             var taggedLine = lines.FirstOrDefault(l => l.StartsWith(tag));
             if (taggedLine == null || !taggedLine.StartsWith($"{tag} OK"))
@@ -192,7 +192,7 @@ namespace AbriMail.Transport
             await _writer!.WriteAsync(command);
             var responseMsg = await ReadResponseAsync();
 
-            var msgLines = responseMsg.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+            var msgLines = responseMsg.Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries);
             var taggedMsgResp = msgLines.FirstOrDefault(l => l.StartsWith(tag));
             if (taggedMsgResp == null || !taggedMsgResp.StartsWith($"{tag} OK"))
             {
@@ -226,7 +226,7 @@ namespace AbriMail.Transport
             await _writer!.WriteAsync(command);
             var response = await ReadResponseAsync();
 
-            var lines = response.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+            var lines = response.Split(["\r\n", "\n"], StringSplitOptions.None);
             var headers = new List<string>();
             var builder = new StringBuilder();
             bool inBlock = false;
@@ -274,7 +274,7 @@ namespace AbriMail.Transport
             var response = await ReadResponseAsync();
 
             // Extract the literal block content
-            var lines = response.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+            var lines = response.Split(["\r\n", "\n"], StringSplitOptions.None);
             var builder = new StringBuilder();
             bool inBlock = false;
             foreach (var line in lines)
@@ -352,7 +352,7 @@ namespace AbriMail.Transport
             await LoginAsync(settings.Username, settings.Password);
         }
 
-
+        #region Private Helper Methods
         private string GetNextTag()
         {
             return $"A{_commandTagCounter++:000}";
@@ -389,34 +389,6 @@ namespace AbriMail.Transport
             }
 
             return response.ToString();
-        }
-
-        private MailboxInfo ParseMailboxInfo(string response)
-        {
-            var info = new MailboxInfo();
-            var lines = response.Split('\n');
-
-            foreach (var line in lines)
-            {
-                if (line.Contains("EXISTS"))
-                {
-                    var parts = line.Split(' ');
-                    if (parts.Length >= 2 && int.TryParse(parts[1], out var count))
-                    {
-                        info.MessageCount = count;
-                    }
-                }
-                else if (line.Contains("RECENT"))
-                {
-                    var parts = line.Split(' ');
-                    if (parts.Length >= 2 && int.TryParse(parts[1], out var recent))
-                    {
-                        info.RecentCount = recent;
-                    }
-                }
-            }
-
-            return info;
         }
 
         private List<EmailHeader> ParseEmailHeaders(string response)
@@ -481,6 +453,7 @@ namespace AbriMail.Transport
             // In a real implementation, we'll properly parse the IMAP ENVELOPE structure
             return $"[{field} from envelope]";
         }
+        #endregion
 
         /// <summary>
         /// Logs out and releases all resources synchronously.

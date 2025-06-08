@@ -19,6 +19,10 @@ This library provides low-level IMAP4rev1 protocol implementation for connecting
 - `FETCH BODY[]` - Retrieve the full raw message (headers + body)
 - `LOGOUT` - Close the connection
 
+## IMAP Summary:
+
+In summary, AbriMail.Transport’s IMAP implementation log in to the server, select INBOX, fetch either headers or full messages, and logout. It adheres to IMAP text protocol but only implements the commands needed for a basic read-only inbox view. This minimal set (LOGIN, SELECT, FETCH, LOGOUT) is sufficient to retrieve messages from a mailbox. Advanced features like searching or marking messages read are omitted in the version 1.0.0.
+
 ## Usage Example
 
 ```csharp
