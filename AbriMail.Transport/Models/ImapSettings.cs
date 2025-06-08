@@ -1,10 +1,10 @@
-namespace AbriMail.Transport
+namespace AbriMail.Transport.Models;
+
+/// <summary>
+/// Configuration settings for IMAP server connection.
+/// </summary>
+public class ImapSettings
 {
-  /// <summary>
-  /// Configuration settings for IMAP server connection.
-  /// </summary>
-  public class ImapSettings
-  {
     /// <summary>
     /// IMAP server hostname (e.g., "imap.gmail.com").
     /// </summary>
@@ -40,17 +40,17 @@ namespace AbriMail.Transport
     /// </summary>
     public void Validate()
     {
-      if (string.IsNullOrWhiteSpace(Host))
-        throw new ArgumentException("Host is required", nameof(Host));
+        if (string.IsNullOrWhiteSpace(Host))
+            throw new ArgumentException("Host is required", nameof(Host));
 
-      if (Port <= 0 || Port > 65535)
-        throw new ArgumentException("Port must be between 1 and 65535", nameof(Port));
+        if (Port <= 0 || Port > 65535)
+            throw new ArgumentException("Port must be between 1 and 65535", nameof(Port));
 
-      if (string.IsNullOrWhiteSpace(Username))
-        throw new ArgumentException("Username is required", nameof(Username));
+        if (string.IsNullOrWhiteSpace(Username))
+            throw new ArgumentException("Username is required", nameof(Username));
 
-      if (string.IsNullOrWhiteSpace(Password))
-        throw new ArgumentException("Password is required", nameof(Password));
+        if (string.IsNullOrWhiteSpace(Password))
+            throw new ArgumentException("Password is required", nameof(Password));
     }
 
     /// <summary>
@@ -58,53 +58,52 @@ namespace AbriMail.Transport
     /// </summary>
     public static class Presets
     {
-      /// <summary>
-      /// Standart settings for Gmail IMAP access.
-      /// </summary>
-      public static ImapSettings Gmail(string username, string password) => new()
-      {
-        Host = "imap.gmail.com",
-        Port = 993,
-        Username = username,
-        Password = password,
-        UseTLS = true
-      };
+        /// <summary>
+        /// Standart settings for Gmail IMAP access.
+        /// </summary>
+        public static ImapSettings Gmail(string username, string password) => new()
+        {
+            Host = "imap.gmail.com",
+            Port = 993,
+            Username = username,
+            Password = password,
+            UseTLS = true
+        };
 
-      /// <summary>
-      /// Standart settings for Outlook IMAP access.
-      /// </summary>
-      public static ImapSettings Outlook(string username, string password) => new()
-      {
-        Host = "outlook.office365.com",
-        Port = 993,
-        Username = username,
-        Password = password,
-        UseTLS = true
-      };
+        /// <summary>
+        /// Standart settings for Outlook IMAP access.
+        /// </summary>
+        public static ImapSettings Outlook(string username, string password) => new()
+        {
+            Host = "outlook.office365.com",
+            Port = 993,
+            Username = username,
+            Password = password,
+            UseTLS = true
+        };
 
-      /// <summary>
-      /// Standart settings for Yahoo IMAP access.
-      /// </summary>
-      public static ImapSettings Yahoo(string username, string password) => new()
-      {
-        Host = "imap.mail.yahoo.com",
-        Port = 993,
-        Username = username,
-        Password = password,
-        UseTLS = true
-      };
+        /// <summary>
+        /// Standart settings for Yahoo IMAP access.
+        /// </summary>
+        public static ImapSettings Yahoo(string username, string password) => new()
+        {
+            Host = "imap.mail.yahoo.com",
+            Port = 993,
+            Username = username,
+            Password = password,
+            UseTLS = true
+        };
 
-      /// <summary>
-      /// Standart settings for Fastmail IMAP access.
-      /// </summary>
-      public static ImapSettings Fastmail(string username, string password) => new()
-      {
-        Host = "imap.fastmail.com",
-        Port = 993,
-        Username = username,
-        Password = password,
-        UseTLS = true
-      };
+        /// <summary>
+        /// Standart settings for Fastmail IMAP access.
+        /// </summary>
+        public static ImapSettings Fastmail(string username, string password) => new()
+        {
+            Host = "imap.fastmail.com",
+            Port = 993,
+            Username = username,
+            Password = password,
+            UseTLS = true
+        };
     }
-  }
 }

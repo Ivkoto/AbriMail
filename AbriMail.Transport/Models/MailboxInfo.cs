@@ -1,10 +1,10 @@
-namespace AbriMail.Transport
+namespace AbriMail.Transport.Models;
+
+/// <summary>
+/// Contains information about a selected IMAP mailbox.
+/// </summary>
+public class MailboxInfo
 {
-  /// <summary>
-  /// Contains information about a selected IMAP mailbox.
-  /// </summary>
-  public class MailboxInfo
-  {
     /// <summary>
     /// Total number of messages in the mailbox.
     /// </summary>
@@ -24,5 +24,4 @@ namespace AbriMail.Transport
     /// Indicates if the mailbox is read-only.
     /// </summary>
     public bool IsReadOnly { get; set; }
-  }
 }

@@ -1,3 +1,5 @@
+using AbriMail.Transport.Models;
+
 namespace AbriMail.Transport
 {
     /// <summary>

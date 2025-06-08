@@ -1,10 +1,10 @@
-namespace AbriMail.Transport
+namespace AbriMail.Transport.Models;
+
+/// <summary>
+/// Represents a complete email message retrieved from IMAP.
+/// </summary>
+public class EmailMessage
 {
-  /// <summary>
-  /// Represents a complete email message retrieved from IMAP.
-  /// </summary>
-  public class EmailMessage
-  {
     /// <summary>
     /// Message sequence number (1-based) in the mailbox.
     /// </summary>
@@ -55,61 +55,60 @@ namespace AbriMail.Transport
     /// </summary>
     public void ParseRawContent()
     {
-      if (string.IsNullOrEmpty(RawContent))
-        return;
+        if (string.IsNullOrEmpty(RawContent))
+            return;
 
-      var lines = RawContent.Split('\n');
-      var headerSection = true;
-      var bodyBuilder = new System.Text.StringBuilder();
+        var lines = RawContent.Split('\n');
+        var headerSection = true;
+        var bodyBuilder = new System.Text.StringBuilder();
 
-      foreach (var line in lines)
-      {
-        if (headerSection)
+        foreach (var line in lines)
         {
-          if (string.IsNullOrWhiteSpace(line))
-          {
-            headerSection = false;
-            continue;
-          }
-
-          // Parse header line
-          var colonIndex = line.IndexOf(':');
-          if (colonIndex > 0)
-          {
-            var headerName = line.Substring(0, colonIndex).Trim().ToLowerInvariant();
-            var headerValue = line.Substring(colonIndex + 1).Trim();
-
-            Headers[headerName] = headerValue;
-
-            // Extract common headers
-            switch (headerName)
+            if (headerSection)
             {
-              case "subject":
-                Subject = headerValue;
-                break;
-              case "from":
-                From = headerValue;
-                break;
-              case "to":
-                To = headerValue;
-                break;
-              case "date":
-                if (DateTime.TryParse(headerValue, out var date))
-                  Date = date;
-                break;
-              case "content-type":
-                ContentType = headerValue.Split(';')[0].Trim();
-                break;
-            }
-          }
-        }
-        else
-        {
-          bodyBuilder.AppendLine(line);
-        }
-      }
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    headerSection = false;
+                    continue;
+                }
 
-      Body = bodyBuilder.ToString().Trim();
+                // Parse header line
+                var colonIndex = line.IndexOf(':');
+                if (colonIndex > 0)
+                {
+                    var headerName = line.Substring(0, colonIndex).Trim().ToLowerInvariant();
+                    var headerValue = line.Substring(colonIndex + 1).Trim();
+
+                    Headers[headerName] = headerValue;
+
+                    // Extract common headers
+                    switch (headerName)
+                    {
+                        case "subject":
+                            Subject = headerValue;
+                            break;
+                        case "from":
+                            From = headerValue;
+                            break;
+                        case "to":
+                            To = headerValue;
+                            break;
+                        case "date":
+                            if (DateTime.TryParse(headerValue, out var date))
+                                Date = date;
+                            break;
+                        case "content-type":
+                            ContentType = headerValue.Split(';')[0].Trim();
+                            break;
+                    }
+                }
+            }
+            else
+            {
+                bodyBuilder.AppendLine(line);
+            }
+        }
+
+        Body = bodyBuilder.ToString().Trim();
     }
-  }
 }

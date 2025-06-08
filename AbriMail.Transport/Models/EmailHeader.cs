@@ -1,10 +1,10 @@
-namespace AbriMail.Transport
+namespace AbriMail.Transport.Models;
+
+/// <summary>
+/// Represents email header information retrieved from IMAP ENVELOPE response.
+/// </summary>
+public class EmailHeader
 {
-  /// <summary>
-  /// Represents email header information retrieved from IMAP ENVELOPE response.
-  /// </summary>
-  public class EmailHeader
-  {
     /// <summary>
     /// Message sequence number (1-based) in the mailbox.
     /// </summary>
@@ -44,5 +44,4 @@ namespace AbriMail.Transport
     /// Message flags (e.g., \Seen, \Flagged, etc.).
     /// </summary>
     public List<string> Flags { get; set; } = new List<string>();
-  }
 }
