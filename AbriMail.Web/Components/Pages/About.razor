@@ -1,0 +1,35 @@
+@page "/about"
+@using System.IO
+@using Markdig
+@using Microsoft.AspNetCore.Components
+@inject IWebHostEnvironment Env
+
+@if (htmlContent == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    @((MarkupString)htmlContent)
+}
+
+@code {
+    private string? htmlContent;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var solutionRoot = Directory.GetParent(Env.ContentRootPath)?.FullName ?? Env.ContentRootPath;
+        var mdPath = Path.Combine(solutionRoot, "ABOUT.md");
+
+        if (File.Exists(mdPath))
+        {
+            var markdown = await File.ReadAllTextAsync(mdPath);
+            var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
+            htmlContent = Markdown.ToHtml(markdown, pipeline);
+        }
+        else
+        {
+            htmlContent = "<p>About file not found.</p>";
+        }
+    }
+}

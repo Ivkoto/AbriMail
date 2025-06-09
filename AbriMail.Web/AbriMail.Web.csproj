@@ -6,4 +6,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\AbriMail.App\AbriMail.App.csproj" />
+    <ProjectReference Include="..\AbriMail.Transport\AbriMail.Transport.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Markdig" Version="0.41.2" />
+  </ItemGroup>
+
 </Project>
+ 

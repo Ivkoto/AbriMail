@@ -1,0 +1,72 @@
+@page "/mailbox"
+@using Microsoft.AspNetCore.Components
+@using AbriMail.Transport.Models
+@inject AbriMail.Web.Services.IMailService MailService
+@inject NavigationManager NavigationManager
+
+<h3>Inbox</h3>
+<button class="btn btn-primary mb-2" @onclick="LoadInbox" disabled="@isLoading">
+    @if (isLoading) { <span>Loading...</span> } else { <span>Refresh</span> }
+</button>
+
+@if (isLoading)
+{
+    <p>Loading messages...</p>
+}
+else if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr><th>Subject</th><th>From</th><th>Date</th><th></th></tr>
+        </thead>
+        <tbody>
+            @foreach (var header in headers)
+            {
+                <tr>
+                    <td>@header.Subject</td>
+                    <td>@header.From</td>
+                    <td>@header.Date</td>
+                    <td>
+                        <button class="btn btn-link p-0" @onclick='() => NavigationManager.NavigateTo("/message/" + header.SequenceNumber)'>
+                            View
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<EmailHeader> headers = new();
+    private bool isLoading;
+    private string errorMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadInbox();
+    }
+
+    private async Task LoadInbox()
+    {
+        isLoading = true;
+        errorMessage = string.Empty;
+
+        try
+        {
+            headers = await MailService.GetInboxAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

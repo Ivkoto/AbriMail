@@ -1,0 +1,83 @@
+@page "/settings"
+@using AbriMail.Web.Models
+@using AbriMail.Web.Services
+@using Microsoft.AspNetCore.Components.Forms
+@inject IMailService MailService
+
+<h3>Settings</h3>
+
+<EditForm FormName="SettingsForm" Model="configModel" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label class="form-label">IMAP Server</label>
+        <InputText class="form-control" @bind-Value="configModel.ImapServer" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">IMAP Port</label>
+        <InputNumber class="form-control" @bind-Value="configModel.ImapPort" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">IMAP Username</label>
+        <InputText class="form-control" @bind-Value="configModel.ImapUsername" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">IMAP Password</label>
+        <InputText type="password" class="form-control" @bind-Value="configModel.ImapPassword" />
+    </div>
+
+    <hr />
+
+    <div class="mb-3">
+        <label class="form-label">SMTP Server</label>
+        <InputText class="form-control" @bind-Value="configModel.SmtpServer" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">SMTP Port</label>
+        <InputNumber class="form-control" @bind-Value="configModel.SmtpPort" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">SMTP Username</label>
+        <InputText class="form-control" @bind-Value="configModel.SmtpUsername" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">SMTP Password</label>
+        <InputText type="password" class="form-control" @bind-Value="configModel.SmtpPassword" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save</button>
+</EditForm>
+
+@if (saveSuccess)
+{
+    <div class="alert alert-success mt-3">Settings saved.</div>
+}
+
+@code {
+    private MailConfig configModel = new MailConfig();
+    private bool saveSuccess;
+
+    protected override void OnInitialized()
+    {
+        var cfg = MailService.Config;
+
+        configModel = new MailConfig
+        {
+            ImapServer = cfg.ImapServer,
+            ImapPort = cfg.ImapPort,
+            ImapUsername = cfg.ImapUsername,
+            ImapPassword = cfg.ImapPassword,
+            SmtpServer = cfg.SmtpServer,
+            SmtpPort = cfg.SmtpPort,
+            SmtpUsername = cfg.SmtpUsername,
+            SmtpPassword = cfg.SmtpPassword
+        };
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        await MailService.UpdateConfigAsync(configModel);
+        saveSuccess = true;
+    }
+}

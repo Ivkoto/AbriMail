@@ -1,0 +1,74 @@
+@page "/compose"
+@using AbriMail.Web.Models
+@using Microsoft.AspNetCore.Components.Forms
+@inject AbriMail.Web.Services.IMailService MailService
+@inject NavigationManager NavigationManager
+
+<h3>Compose Email</h3>
+
+<EditForm Model="composeModel" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label class="form-label">To</label>
+        <InputText class="form-control" @bind-Value="composeModel.To" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Subject</label>
+        <InputText class="form-control" @bind-Value="composeModel.Subject" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Body</label>
+        <InputTextArea class="form-control" rows="10" @bind-Value="composeModel.Body" />
+    </div>
+
+    <button type="submit" class="btn btn-primary me-2" disabled="@isSending">
+        @if (isSending) { <span>Sending...</span> } else { <span>Send</span> }
+    </button>
+    <button type="button" class="btn btn-secondary" @onclick="Cancel" disabled="@isSending">Cancel</button>
+</EditForm>
+
+@if (sendSuccess)
+{
+    <div class="alert alert-success mt-3">Email sent.</div>
+}
+else if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger mt-3">@errorMessage</div>
+}
+
+@code {
+    private ComposeModel composeModel = new ComposeModel();
+    private bool isSending;
+    private bool sendSuccess;
+    private string errorMessage = string.Empty;
+
+    private async Task HandleValidSubmit()
+    {
+        isSending = true;
+        errorMessage = string.Empty;
+        sendSuccess = false;
+
+        try
+        {
+            await MailService.SendEmailAsync(composeModel);
+            sendSuccess = true;
+
+            NavigationManager.NavigateTo("/mailbox");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isSending = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/mailbox");
+    }
+}

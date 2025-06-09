@@ -1,0 +1,66 @@
+@page "/message/{SequenceNumber:int}"
+@using Microsoft.AspNetCore.Components
+@using AbriMail.Transport.Models
+@using AbriMail.Web.Services
+@inject IMailService MailService
+@inject NavigationManager NavigationManager
+
+<h3>Message</h3>
+<button class="btn btn-secondary mb-2" @onclick="BackToInbox">Back to Inbox</button>
+
+@if (isLoading)
+{
+    <p>Loading message...</p>
+}
+else if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+else if (message != null)
+{
+    <dl class="row">
+        <dt class="col-sm-2">From</dt><dd class="col-sm-10">@message.From</dd>
+        <dt class="col-sm-2">To</dt><dd class="col-sm-10">@message.To</dd>
+        <dt class="col-sm-2">Subject</dt><dd class="col-sm-10">@message.Subject</dd>
+        <dt class="col-sm-2">Date</dt><dd class="col-sm-10">@message.Date</dd>
+    </dl>
+    @if ((message.ContentType ?? string.Empty).Contains("html", StringComparison.OrdinalIgnoreCase))
+    {
+        @((MarkupString)message.Body)
+    }
+    else
+    {
+        <pre>@message.Body</pre>
+    }
+}
+
+@code {
+    [Parameter]
+    public int SequenceNumber { get; set; }
+
+    private EmailMessage? message;
+    private bool isLoading;
+    private string errorMessage = string.Empty;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        isLoading = true;
+        errorMessage = string.Empty;
+        message = null;
+
+        try
+        {
+            message = await MailService.GetMessageAsync(SequenceNumber);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void BackToInbox() => NavigationManager.NavigateTo("/mailbox");
+}
