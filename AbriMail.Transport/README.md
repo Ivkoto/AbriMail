@@ -5,10 +5,11 @@ This library provides low-level IMAP4rev1 protocol implementation for connecting
 ## Features
 
 - **Secure Connection**: Connects to IMAP servers using implicit TLS on port 993
-- **Basic Authentication**: Supports plain username/password authentication
+- **Basic Authentication**: Supports plain username/password authentication for IMAP
+- **SMTP Sending**: Send emails via SMTP over implicit TLS on port 465 (EHLO, AUTH LOGIN, MAIL FROM, RCPT TO, DATA, QUIT)
 - **Mailbox Operations**: Select and examine mailboxes (primarily INBOX)
 - **Message Retrieval**: Fetch email headers and full message content
-- **Protocol Compliance**: Implements essential IMAP4rev1 commands
+- **Protocol Compliance**: Implements essential IMAP4rev1 and SMTP commands
 
 ## Supported IMAP Commands
 
@@ -61,6 +62,8 @@ catch (ImapException ex)
 
 ## API Methods
 
+### IMAP (Email Retrieval)
+
 **Connection & Authentication**
 
 - `ConnectAsync(string host, int port=993)`
@@ -76,6 +79,51 @@ catch (ImapException ex)
 - `FetchRawHeadersAsync(int start, int count) -> List<string>`
 - `FetchMessageAsync(int messageId) -> EmailMessage`
 - `FetchRawMessageAsync(int messageId) -> string`
+
+### SMTP (Email Sending)
+
+**Connection & Sending**
+
+- `ConnectAsync(string host, int port=465)`
+- `EhloAsync(string domain) -> IList<string>`
+- `AuthenticateAsync(string username, string password)`
+- `MailFromAsync(string sender)`
+- `RcptToAsync(string recipient)`
+- `DataAsync(string content)`
+- `QuitAsync()`
+- `SendEmailAsync(string host, int port, string domain, string username, string password, MailMessageDetails details)`
+
+## Usage Examples
+
+### IMAP Example
+
+...existing IMAP example...
+
+### SMTP Example
+
+```csharp
+using AbriMail.Transport;
+using AbriMail.Transport.Models;
+
+var smtpClient = new SmtpClient();
+var message = new MailMessageDetails
+{
+    From = "user@example.com",
+    To = new List<string> { "recipient@example.com" },
+    Subject = "Test Email",
+    Body = "Hello, this is a test.",
+    ContentType = "text/plain"
+};
+
+await smtpClient.SendEmailAsync(
+    host: "smtp.server.com",
+    port: 465,
+    domain: "example.com",
+    username: "user@example.com",
+    password: "password",
+    details: message
+);
+```
 
 ## Error Handling
 
@@ -125,6 +173,14 @@ Main client class implementing `IImapClient` interface.
 - `Headers` - Parsed headers dictionary
 - `Body` - Message body
 - `Subject`, `From`, `To`, `Date` - Extracted fields
+
+**MailMessageDetails** - Email message details for sending
+
+- `From` - Sender's email address
+- `To` - Recipient's email addresses
+- `Subject` - Email subject
+- `Body` - Email body content
+- `ContentType` - MIME content type (e.g., "text/plain", "text/html")
 
 ### Exceptions
 

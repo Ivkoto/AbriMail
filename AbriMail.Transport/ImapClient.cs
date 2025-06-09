@@ -36,7 +36,11 @@ public class ImapClient : IImapClient, IAsyncDisposable
             _tcpClient = new TcpClient();
             await _tcpClient.ConnectAsync(host, port);
 
-            _sslStream = new SslStream(_tcpClient.GetStream());
+            _sslStream = new SslStream(
+                _tcpClient.GetStream(),
+                leaveInnerStreamOpen: false,
+                userCertificateValidationCallback: ValidateServerCertificate);
+
             await _sslStream.AuthenticateAsClientAsync(host);
 
             _reader = new StreamReader(_sslStream, Encoding.ASCII);
@@ -505,5 +509,17 @@ public class ImapClient : IImapClient, IAsyncDisposable
         _tcpClient?.Dispose();
 
         _disposed = true;
+    }
+
+    /// <summary>
+    /// Default server certificate validation callback (accept only valid certs).
+    /// </summary>
+    private static bool ValidateServerCertificate(
+        object sender,
+        System.Security.Cryptography.X509Certificates.X509Certificate? certificate,
+        System.Security.Cryptography.X509Certificates.X509Chain? chain,
+        SslPolicyErrors sslPolicyErrors)
+    {
+        return sslPolicyErrors == SslPolicyErrors.None;
     }
 }
