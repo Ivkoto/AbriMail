@@ -2,52 +2,60 @@
 
 .Net | Blazor Server Email Client (IMAP/SMTP)
 
+## About
+
+**AbriMail is a minimal, open-source Blazor Server email client built on raw IMAP4rev1 and SMTP protocols over implicit TLS. It demonstrates how to implement both receiving and sending email functionality without relying on third-party libraries.**
+
 **A simple implementation of a Blazor Server web-based email client.**
 
 - The client will use the IMAP4rev1 and SMTP protocols over implicit TLS/SSL to fetch and send emails.
 - The solution is structured as three separate .NET projects to enforce a clean separation of concerns.
 - At the beggining only the basic email features will be implemented, focusing on clarity and simplicity while acknowledging limitations.
-- No third-party email libraries (e.g. MailKit) will be used – all IMAP/SMTP interactions are handled with raw sockets and SslStream.
 
----
+### Who Can Use It
 
-### Main Scope:
+- Developers learning how IMAP and SMTP work under the hood
+- Teams needing a simple web-based email client prototype
+- Anyone curious about building secure networked applications in .NET and Blazor
 
-**Protocols:**
+### Key Features
 
-- IMAP for receiving.
-- SMTP for sending.
-- using implicit TLS on the standard secure ports (IMAP on 993, SMTP on 465).
+- **Server-side Blazor UI** with asynchronous operations to avoid blocking the server circuit
+- **Settings** page for user-driven configuration of IMAP/SMTP servers, ports, and credentials
+- **Inbox** page showing message headers (From, Subject, Date)
+- **Message** viewer for reading full email bodies (plain-text and HTML)
+- **Compose** page for drafting and sending new emails (AUTH LOGIN, MAIL FROM, RCPT TO, DATA)
+- Full transport layer in `AbriMail.Transport` project: low-level IMAP and SMTP clients using `TcpClient`, `SslStream`, and plain text commands
 
-**Authentication:**
+### What’s Included
 
-- plain username/password.
-- no OAuth or token-based auth.
+1. **AbriMail.Transport** – Protocol implementation
+   - `ImapClient` for secure IMAP4rev1 connections and message retrieval
+   - `SmtpClient` for secure SMTP (implicit TLS) and email sending
+   - Data models: `EmailHeader`, `EmailMessage`, `MailMessageDetails`, and settings
+2. **AbriMail.App** – (Placeholder project for future business logic or shared services)
+3. **AbriMail.Web** – Blazor Server application
+   - Razor components for Settings, Mailbox (inbox), Message view, and Compose
+   - In-memory `MailService` implementing `IMailService` to tie UI to transport layer
+   - Dependency injection setup in `Program.cs`
 
-**No Offline Storage:**
+### Getting Started
 
-- The client fetches emails on demand (no local caching or offline mode).
+1. Clone the repository and open **AbriEmailClient.sln** in Visual Studio or VS Code.
+2. Update your IMAP/SMTP server details in the **Settings** page at runtime.
+3. Navigate to **Inbox** to fetch new messages.
+4. Use **Compose** to send emails immediately.
 
-**Simplified IMAP Commands:**
+### Limitations
 
-- support only LOGIN, selecting the INBOX, and FETCH for message headers or full bodies.
-- skipping advanced commands like SEARCH, IDLE, flags, or folder management.
+- No persistent storage or caching of messages
+- No support for attachments or advanced MIME parts
+- Read-only message retrieval (no flags, search, or folder management)
+- No OAuth or modern token-based authentication (plain username/password only)
 
-**Simplified SMTP Commands:**
+### License
 
-- support only basic SMTP handshake and send commands (EHLO, AUTH LOGIN, MAIL FROM, RCPT TO, DATA, QUIT).
-- no support for attachments or complex MIME parts in outgoing mail.
-
-**Configuration:**
-
-- UI provided to user to input server settings - IMAP/SMTP host, ports, credentials.
-
-**Basic UI Pages:**
-
-- pages for configuring settings.
-- viewing the inbox - list of messages.
-- reading a message.
-- composing/sending a new email.
+This project is licensed under the **MIT License**. See [LICENSE](LICENSE) for details.
 
 ---
 

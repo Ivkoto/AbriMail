@@ -19,7 +19,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         var solutionRoot = Directory.GetParent(Env.ContentRootPath)?.FullName ?? Env.ContentRootPath;
-        var mdPath = Path.Combine(solutionRoot, "ABOUT.md");
+        var mdPath = Path.Combine(solutionRoot, "README.md");
 
         if (File.Exists(mdPath))
         {
