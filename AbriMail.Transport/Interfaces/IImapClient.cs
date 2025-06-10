@@ -15,12 +15,6 @@ namespace AbriMail.Transport
         Task ConnectAsync(string host, int port = 993);
 
         /// <summary>
-        /// Connects to the IMAP server using provided settings.
-        /// </summary>
-        /// <param name="settings">IMAP connection settings</param>
-        Task ConnectAsync(ImapSettings settings);
-
-        /// <summary>
         /// Connects and authenticates using the provided settings.
         /// </summary>
         /// <param name="settings">IMAP connection settings including credentials</param>
@@ -53,20 +47,6 @@ namespace AbriMail.Transport
         /// <param name="messageId">Message sequence number (1-based)</param>
         /// <returns>Full email message content</returns>
         Task<EmailMessage> FetchMessageAsync(int messageId);
-
-        /// <summary>
-        /// Fetches the full raw headers for a range of messages (BODY[HEADER]).
-        /// </summary>
-        /// <param name="start">Starting message number (1-based)</param>
-        /// <param name="count">Number of messages to fetch</param>
-        Task<List<string>> FetchRawHeadersAsync(int start, int count);
-
-        /// <summary>
-        /// Fetches the full raw RFC822 message (headers+body) for the specified message.
-        /// </summary>
-        /// <param name="messageId">Message sequence number (1-based)</param>
-        /// <returns>Raw message content including headers and body</returns>
-        Task<string> FetchRawMessageAsync(int messageId);
 
         /// <summary>
         /// Logs out and disconnects from the IMAP server.

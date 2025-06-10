@@ -86,10 +86,11 @@ public class SmtpClient : IAsyncDisposable, IDisposable
 
         await _writer.WriteAsync("AUTH LOGIN\r\n");
         var response = await _reader.ReadLineAsync();
+
         if (response == null || !response.StartsWith("334"))
             throw new InvalidOperationException($"SMTP AUTH LOGIN failed: {response}");
 
-        // Send base64-encoded username
+        // Base64-encoded username
         var userB64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(username));
         await _writer.WriteAsync(userB64 + "\r\n");
         response = await _reader.ReadLineAsync();
@@ -97,7 +98,7 @@ public class SmtpClient : IAsyncDisposable, IDisposable
         if (response == null || !response.StartsWith("334"))
             throw new InvalidOperationException($"SMTP username rejected: {response}");
 
-        // Send base64-encoded password
+        // Base64-encoded password
         var passB64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(password));
         await _writer.WriteAsync(passB64 + "\r\n");
         response = await _reader.ReadLineAsync();

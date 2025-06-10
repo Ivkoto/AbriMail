@@ -1,41 +1,94 @@
 @page "/compose"
 @using AbriMail.Web.Models
+@using AbriMail.App.Interfaces
+@using AbriMail.App.Models
 @using Microsoft.AspNetCore.Components.Forms
-@inject AbriMail.Web.Services.IMailService MailService
+@inject IMailboxService MailService
 @inject NavigationManager NavigationManager
 
 <h3>Compose Email</h3>
 
-<EditForm Model="composeModel" OnValidSubmit="HandleValidSubmit">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+<div class="row">
+    <div class="col-md-8">
+        <EditForm FormName="ComposeForm" Model="composeModel" OnValidSubmit="HandleValidSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
 
-    <div class="mb-3">
-        <label class="form-label">To</label>
-        <InputText class="form-control" @bind-Value="composeModel.To" />
+            <div class="card">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">To</label>
+                        <InputText class="form-control" @bind-Value="composeModel.To" placeholder="recipient@example.com, another@example.com" />
+                        <div class="form-text">Separate multiple recipients with commas</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Subject</label>
+                        <InputText class="form-control" @bind-Value="composeModel.Subject" placeholder="Enter email subject" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Message</label>
+                        <InputTextArea class="form-control" rows="12" @bind-Value="composeModel.Body" placeholder="Type your message here..." />
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary me-2" disabled="@isSending">
+                        @if (isSending) 
+                        { 
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            <span>Sending...</span> 
+                        } 
+                        else 
+                        { 
+                            <i class="bi bi-send me-2"></i>
+                            <span>Send</span> 
+                        }
+                    </button>
+                    <button type="button" class="btn btn-secondary" @onclick="Cancel" disabled="@isSending">Cancel</button>
+                </div>
+            </div>
+        </EditForm>
     </div>
-    <div class="mb-3">
-        <label class="form-label">Subject</label>
-        <InputText class="form-control" @bind-Value="composeModel.Subject" />
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6>Tips</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li><i class="bi bi-info-circle text-primary me-2"></i>Use commas to separate multiple recipients</li>
+                    <li><i class="bi bi-info-circle text-primary me-2"></i>Make sure your SMTP settings are configured</li>
+                    <li><i class="bi bi-info-circle text-primary me-2"></i>Email will be sent as plain text</li>
+                </ul>
+            </div>
+        </div>
     </div>
-    <div class="mb-3">
-        <label class="form-label">Body</label>
-        <InputTextArea class="form-control" rows="10" @bind-Value="composeModel.Body" />
-    </div>
-
-    <button type="submit" class="btn btn-primary me-2" disabled="@isSending">
-        @if (isSending) { <span>Sending...</span> } else { <span>Send</span> }
-    </button>
-    <button type="button" class="btn btn-secondary" @onclick="Cancel" disabled="@isSending">Cancel</button>
-</EditForm>
+</div>
 
 @if (sendSuccess)
 {
-    <div class="alert alert-success mt-3">Email sent.</div>
+    <div class="alert alert-success mt-3">
+        <strong>Success!</strong> Email sent successfully.
+        <div class="mt-2">
+            <a href="/mailbox" class="btn btn-outline-success btn-sm">Go to Inbox</a>
+        </div>
+    </div>
 }
 else if (!string.IsNullOrEmpty(errorMessage))
 {
-    <div class="alert alert-danger mt-3">@errorMessage</div>
+    <div class="alert alert-danger mt-3">
+        <strong>Failed to send email:</strong> @errorMessage
+        <div class="mt-2">
+            <small>
+                Common issues:
+                <ul class="mb-0">
+                    <li>Check your SMTP settings in the Settings page</li>
+                    <li>Verify recipient email addresses are valid</li>
+                    <li>Make sure you're connected to the internet</li>
+                </ul>
+            </small>
+        </div>
+    </div>
 }
 
 @code {
@@ -52,10 +105,20 @@ else if (!string.IsNullOrEmpty(errorMessage))
 
         try
         {
-            await MailService.SendEmailAsync(composeModel);
+            var dto = new SendEmailDto
+            {
+                To = composeModel.To
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(addr => addr.Trim())
+                    .ToList(),
+                Subject = composeModel.Subject,
+                Body = composeModel.Body
+            };
+            await MailService.SendEmailAsync(dto);
             sendSuccess = true;
-
-            NavigationManager.NavigateTo("/mailbox");
+            
+            // Clear the form after successful send
+            composeModel = new ComposeModel();
         }
         catch (Exception ex)
         {

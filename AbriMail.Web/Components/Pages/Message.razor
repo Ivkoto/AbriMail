@@ -1,48 +1,91 @@
 @page "/message/{SequenceNumber:int}"
-@using Microsoft.AspNetCore.Components
-@using AbriMail.Transport.Models
-@using AbriMail.Web.Services
-@inject IMailService MailService
+@using AbriMail.App.Interfaces
+@using AbriMail.App.Models
+@inject IMailboxService MailService
 @inject NavigationManager NavigationManager
 
-<h3>Message</h3>
-<button class="btn btn-secondary mb-2" @onclick="BackToInbox">Back to Inbox</button>
+<h3>Email Message</h3>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <button class="btn btn-secondary" @onclick="BackToInbox">
+        <i class="bi bi-arrow-left me-2"></i>Back to Inbox
+    </button>
+    
+    @if (message != null)
+    {
+        <div>
+            <a href="/compose" class="btn btn-success btn-sm">
+                <i class="bi bi-reply me-2"></i>Reply
+            </a>
+        </div>
+    }
+</div>
 
 @if (isLoading)
 {
-    <p>Loading message...</p>
+    <div class="text-center py-4">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading message...</span>
+        </div>
+        <p class="mt-2">Loading message...</p>
+    </div>
 }
 else if (!string.IsNullOrEmpty(errorMessage))
 {
-    <div class="alert alert-danger">@errorMessage</div>
+    <div class="alert alert-danger">
+        <strong>Error loading message:</strong> @errorMessage
+        <div class="mt-2">
+            <button class="btn btn-outline-danger btn-sm" @onclick="LoadMessage">Try Again</button>
+            <button class="btn btn-outline-secondary btn-sm ms-2" @onclick="BackToInbox">Back to Inbox</button>
+        </div>
+    </div>
 }
 else if (message != null)
 {
-    <dl class="row">
-        <dt class="col-sm-2">From</dt><dd class="col-sm-10">@message.From</dd>
-        <dt class="col-sm-2">To</dt><dd class="col-sm-10">@message.To</dd>
-        <dt class="col-sm-2">Subject</dt><dd class="col-sm-10">@message.Subject</dd>
-        <dt class="col-sm-2">Date</dt><dd class="col-sm-10">@message.Date</dd>
-    </dl>
-    @if ((message.ContentType ?? string.Empty).Contains("html", StringComparison.OrdinalIgnoreCase))
-    {
-        @((MarkupString)message.Body)
-    }
-    else
-    {
-        <pre>@message.Body</pre>
-    }
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">@(string.IsNullOrEmpty(message.Subject) ? "(No Subject)" : message.Subject)</h5>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-2">From:</dt>
+                <dd class="col-sm-10">@message.From</dd>
+                <dt class="col-sm-2">To:</dt>
+                <dd class="col-sm-10">@message.To</dd>
+                <dt class="col-sm-2">Date:</dt>
+                <dd class="col-sm-10">@message.Date</dd>
+            </dl>
+            
+            <hr>
+            
+            <div class="email-body">
+                @if (string.IsNullOrWhiteSpace(message.Body))
+                {
+                    <em class="text-muted">(Empty message body)</em>
+                }
+                else
+                {
+                    <pre style="white-space: pre-wrap; font-family: inherit;">@message.Body</pre>
+                }
+            </div>
+        </div>
+    </div>
 }
 
 @code {
     [Parameter]
     public int SequenceNumber { get; set; }
 
-    private EmailMessage? message;
+    private MailMessageDto? message;
     private bool isLoading;
     private string errorMessage = string.Empty;
 
     protected override async Task OnParametersSetAsync()
+    {
+        await LoadMessage();
+    }
+
+    private async Task LoadMessage()
     {
         isLoading = true;
         errorMessage = string.Empty;
@@ -50,7 +93,7 @@ else if (message != null)
 
         try
         {
-            message = await MailService.GetMessageAsync(SequenceNumber);
+            message = await MailService.FetchEmailAsync(SequenceNumber);
         }
         catch (Exception ex)
         {

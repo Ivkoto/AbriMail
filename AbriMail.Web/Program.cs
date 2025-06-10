@@ -1,11 +1,12 @@
+using AbriMail.App.Interfaces;
+using AbriMail.App.Services;
 using AbriMail.Web.Components;
-using AbriMail.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
-builder.Services.AddScoped<IMailService, MailService>();
+builder.Services.AddScoped<IMailboxService, MailboxService>();
 
 var app = builder.Build();
 

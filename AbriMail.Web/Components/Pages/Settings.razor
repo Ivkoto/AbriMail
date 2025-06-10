@@ -1,83 +1,239 @@
 @page "/settings"
+@using AbriMail.App.Models
+@using AbriMail.App.Interfaces
 @using AbriMail.Web.Models
-@using AbriMail.Web.Services
 @using Microsoft.AspNetCore.Components.Forms
-@inject IMailService MailService
+@inject IMailboxService MailService
 
-<h3>Settings</h3>
+<h3>Server Configuration</h3>
 
-<EditForm FormName="SettingsForm" Model="configModel" OnValidSubmit="HandleValidSubmit">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+<div class="row">
+  <div class="col-md-8">
+        <EditForm Model="formModel" OnValidSubmit="HandleValidSubmit" FormName="ServerSettingsForm">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5>IMAP Settings (for receiving mail)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">IMAP Server</label>
+                        <InputText class="form-control" @bind-Value="formModel.ImapServer" placeholder="e.g., imap.gmail.com" />
+                        <ValidationMessage For="@(() => formModel.ImapServer)" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">IMAP Port</label>
+                        <InputNumber class="form-control" @bind-Value="formModel.ImapPort" />
+                        <ValidationMessage For="@(() => formModel.ImapPort)" />
+                        <div class="form-text">Default: 993 (SSL/TLS)</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">IMAP Username</label>
+                        <InputText class="form-control" @bind-Value="formModel.ImapUsername" placeholder="your-email@example.com" />
+                        <ValidationMessage For="@(() => formModel.ImapUsername)" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">IMAP Password</label>
+                        <InputText type="password" class="form-control" @bind-Value="formModel.ImapPassword" />
+                        <ValidationMessage For="@(() => formModel.ImapPassword)" />
+                    </div>
+                </div>
+            </div>            
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5>SMTP Settings (for sending mail)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">SMTP Server</label>
+                        <InputText class="form-control" @bind-Value="formModel.SmtpServer" placeholder="e.g., smtp.gmail.com" />
+                        <ValidationMessage For="@(() => formModel.SmtpServer)" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">SMTP Port</label>
+                        <InputNumber class="form-control" @bind-Value="formModel.SmtpPort" />
+                        <ValidationMessage For="@(() => formModel.SmtpPort)" />
+                        <div class="form-text">Default: 465 (SSL/TLS)</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">SMTP Username</label>
+                        <InputText class="form-control" @bind-Value="formModel.SmtpUsername" placeholder="your-email@example.com" />
+                        <ValidationMessage For="@(() => formModel.SmtpUsername)" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">SMTP Password</label>
+                        <InputText type="password" class="form-control" @bind-Value="formModel.SmtpPassword" />
+                        <ValidationMessage For="@(() => formModel.SmtpPassword)" />
+                    </div>
+                </div>
+            </div>
 
-    <div class="mb-3">
-        <label class="form-label">IMAP Server</label>
-        <InputText class="form-control" @bind-Value="configModel.ImapServer" />
+            <button type="submit" class="btn btn-primary me-2" disabled="@isConnecting">
+                @if (isConnecting) { <span>Connecting...</span> } else { <span>Connect & Test</span> }
+            </button>
+            
+            @if (saveSuccess)
+            {
+                <a href="/mailbox" class="btn btn-success">Go to Inbox</a>
+            }
+        </EditForm>
     </div>
-    <div class="mb-3">
-        <label class="form-label">IMAP Port</label>
-        <InputNumber class="form-control" @bind-Value="configModel.ImapPort" />
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6>Quick Setup</h6>
+            </div>
+            <div class="card-body">
+                <p class="card-text">Common email provider settings:</p>
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-outline-primary btn-sm" @onclick="() => SetGmailPreset()">Gmail</button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" @onclick="() => SetOutlookPreset()">Outlook</button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" @onclick="() => SetYahooPreset()">Yahoo</button>
+                </div>
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <strong>Note:</strong> After selecting a preset, you still need to enter your username and password.
+                    </small>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="mb-3">
-        <label class="form-label">IMAP Username</label>
-        <InputText class="form-control" @bind-Value="configModel.ImapUsername" />
-    </div>
-    <div class="mb-3">
-        <label class="form-label">IMAP Password</label>
-        <InputText type="password" class="form-control" @bind-Value="configModel.ImapPassword" />
-    </div>
-
-    <hr />
-
-    <div class="mb-3">
-        <label class="form-label">SMTP Server</label>
-        <InputText class="form-control" @bind-Value="configModel.SmtpServer" />
-    </div>
-    <div class="mb-3">
-        <label class="form-label">SMTP Port</label>
-        <InputNumber class="form-control" @bind-Value="configModel.SmtpPort" />
-    </div>
-    <div class="mb-3">
-        <label class="form-label">SMTP Username</label>
-        <InputText class="form-control" @bind-Value="configModel.SmtpUsername" />
-    </div>
-    <div class="mb-3">
-        <label class="form-label">SMTP Password</label>
-        <InputText type="password" class="form-control" @bind-Value="configModel.SmtpPassword" />
-    </div>
-
-    <button type="submit" class="btn btn-primary">Save</button>
-</EditForm>
+</div>
 
 @if (saveSuccess)
 {
-    <div class="alert alert-success mt-3">Settings saved.</div>
+    <div class="alert alert-success mt-3">
+        <strong>Success!</strong> Connected to mail servers successfully. You can now access your inbox.
+    </div>
+}
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger mt-3">
+        <strong>Connection failed:</strong> @errorMessage
+        <div class="mt-2">
+            <small>
+                Common issues:
+                <ul class="mb-0">
+                    <li>Check your username and password</li>
+                    <li>For Gmail, make sure you're using an App Password</li>
+                    <li>Verify server addresses and ports</li>
+                </ul>
+            </small>
+        </div>
+    </div>
 }
 
 @code {
-    private MailConfig configModel = new MailConfig();
+    private ServerSettingsModel formModel = new ServerSettingsModel();
     private bool saveSuccess;
+    private bool isConnecting;
+    private string errorMessage = string.Empty;
 
     protected override void OnInitialized()
     {
-        var cfg = MailService.Config;
-
-        configModel = new MailConfig
+        if (MailService.IsLoggedIn)
         {
-            ImapServer = cfg.ImapServer,
-            ImapPort = cfg.ImapPort,
-            ImapUsername = cfg.ImapUsername,
-            ImapPassword = cfg.ImapPassword,
-            SmtpServer = cfg.SmtpServer,
-            SmtpPort = cfg.SmtpPort,
-            SmtpUsername = cfg.SmtpUsername,
-            SmtpPassword = cfg.SmtpPassword
-        };
+            formModel = new ServerSettingsModel
+            {
+                ImapServer = MailService.Settings.ImapServer,
+                ImapPort = MailService.Settings.ImapPort,
+                ImapUsername = MailService.Settings.ImapUsername,
+                ImapPassword = MailService.Settings.ImapPassword,
+                SmtpServer = MailService.Settings.SmtpServer,
+                SmtpPort = MailService.Settings.SmtpPort,
+                SmtpUsername = MailService.Settings.SmtpUsername,
+                SmtpPassword = MailService.Settings.SmtpPassword
+            };
+        }
+        else
+        {
+            formModel = new ServerSettingsModel();
+        }
     }
 
     private async Task HandleValidSubmit()
     {
-        await MailService.UpdateConfigAsync(configModel);
-        saveSuccess = true;
+        saveSuccess = false;
+        errorMessage = string.Empty;
+        isConnecting = true;
+
+        try
+        {
+            var settings = new ServerSettings
+            {
+                ImapServer = formModel.ImapServer,
+                ImapPort = formModel.ImapPort,
+                ImapUsername = formModel.ImapUsername,
+                ImapPassword = formModel.ImapPassword,
+                SmtpServer = formModel.SmtpServer,
+                SmtpPort = formModel.SmtpPort,
+                SmtpUsername = formModel.SmtpUsername,
+                SmtpPassword = formModel.SmtpPassword
+            };
+            await MailService.LoginAsync(settings);
+            saveSuccess = true;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isConnecting = false;
+        }
+    }
+
+    private void SetGmailPreset()
+    {
+        formModel.ImapServer = "imap.gmail.com";
+        formModel.ImapPort = 993;
+        formModel.SmtpServer = "smtp.gmail.com";
+        formModel.SmtpPort = 465;
+        formModel.ImapUsername = string.Empty;
+        formModel.ImapPassword = string.Empty;
+        formModel.SmtpUsername = string.Empty;
+        formModel.SmtpPassword = string.Empty;
+        
+        // Clear any existing error messages and validation state
+        errorMessage = string.Empty;
+        saveSuccess = false;
+        StateHasChanged();
+    }
+
+    private void SetOutlookPreset()
+    {
+        formModel.ImapServer = "outlook.office365.com";
+        formModel.ImapPort = 993;
+        formModel.SmtpServer = "smtp-mail.outlook.com";
+        formModel.SmtpPort = 587;
+        formModel.ImapUsername = string.Empty;
+        formModel.ImapPassword = string.Empty;
+        formModel.SmtpUsername = string.Empty;
+        formModel.SmtpPassword = string.Empty;
+        
+        // Clear any existing error messages and validation state
+        errorMessage = string.Empty;
+        saveSuccess = false;
+        StateHasChanged();
+    }
+    
+    private void SetYahooPreset()
+    {
+        formModel.ImapServer = "imap.mail.yahoo.com";
+        formModel.ImapPort = 993;
+        formModel.SmtpServer = "smtp.mail.yahoo.com";
+        formModel.SmtpPort = 465;
+        formModel.ImapUsername = string.Empty;
+        formModel.ImapPassword = string.Empty;
+        formModel.SmtpUsername = string.Empty;
+        formModel.SmtpPassword = string.Empty;
+        
+        // Clear any existing error messages and validation state
+        errorMessage = string.Empty;
+        saveSuccess = false;
+        StateHasChanged();
     }
 }

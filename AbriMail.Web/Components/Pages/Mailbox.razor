@@ -1,48 +1,101 @@
 @page "/mailbox"
-@using Microsoft.AspNetCore.Components
-@using AbriMail.Transport.Models
-@inject AbriMail.Web.Services.IMailService MailService
+@using AbriMail.App.Interfaces
+@using AbriMail.App.Models
+@inject IMailboxService MailService
 @inject NavigationManager NavigationManager
 
 <h3>Inbox</h3>
-<button class="btn btn-primary mb-2" @onclick="LoadInbox" disabled="@isLoading">
-    @if (isLoading) { <span>Loading...</span> } else { <span>Refresh</span> }
-</button>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <button class="btn btn-primary" @onclick="LoadInbox" disabled="@isLoading">
+        @if (isLoading) 
+        { 
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            <span>Loading...</span> 
+        } 
+        else 
+        { 
+            <i class="bi bi-arrow-clockwise me-2"></i>
+            <span>Refresh</span> 
+        }
+    </button>
+    
+    <a href="/compose" class="btn btn-success">
+        <i class="bi bi-pencil-square me-2"></i>Compose
+    </a>
+</div>
 
 @if (isLoading)
 {
-    <p>Loading messages...</p>
+    <div class="text-center py-4">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading messages...</span>
+        </div>
+        <p class="mt-2">Loading messages...</p>
+    </div>
 }
 else if (!string.IsNullOrEmpty(errorMessage))
 {
-    <div class="alert alert-danger">@errorMessage</div>
+    <div class="alert alert-danger">
+        <strong>Error loading inbox:</strong> @errorMessage
+        <div class="mt-2">
+            <button class="btn btn-outline-danger btn-sm" @onclick="LoadInbox">Try Again</button>
+            <a href="/settings" class="btn btn-outline-primary btn-sm ms-2">Check Settings</a>
+        </div>
+    </div>
+}
+else if (headers.Count == 0)
+{
+    <div class="alert alert-info">
+        <h5 class="alert-heading">No messages found</h5>
+        <p>Your inbox appears to be empty, or you may need to check your connection settings.</p>
+        <hr>
+        <div class="mb-0">
+            <button class="btn btn-outline-info btn-sm" @onclick="LoadInbox">Refresh</button>
+            <a href="/settings" class="btn btn-outline-primary btn-sm ms-2">Check Settings</a>
+        </div>
+    </div>
 }
 else
 {
-    <table class="table table-striped">
-        <thead>
-            <tr><th>Subject</th><th>From</th><th>Date</th><th></th></tr>
-        </thead>
-        <tbody>
-            @foreach (var header in headers)
-            {
-                <tr>
-                    <td>@header.Subject</td>
-                    <td>@header.From</td>
-                    <td>@header.Date</td>
-                    <td>
-                        <button class="btn btn-link p-0" @onclick='() => NavigationManager.NavigateTo("/message/" + header.SequenceNumber)'>
-                            View
-                        </button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="card">
+        <div class="card-header">
+            <h6 class="mb-0">@headers.Count message(s)</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Subject</th>
+                        <th>From</th>
+                        <th>Date</th>
+                        <th width="80"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var header in headers)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@(string.IsNullOrEmpty(header.Subject) ? "(No Subject)" : header.Subject)</strong>
+                            </td>
+                            <td>@header.From</td>
+                            <td>@header.Date</td>
+                            <td>
+                                <button class="btn btn-outline-primary btn-sm" @onclick='() => NavigationManager.NavigateTo("/message/" + header.Id)'>
+                                    <i class="bi bi-envelope-open"></i> View
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 }
 
 @code {
-    private List<EmailHeader> headers = new();
+    private List<MailHeaderDto> headers = new();
     private bool isLoading;
     private string errorMessage = string.Empty;
 
@@ -58,7 +111,7 @@ else
 
         try
         {
-            headers = await MailService.GetInboxAsync();
+            headers = await MailService.FetchInboxHeadersAsync();
         }
         catch (Exception ex)
         {

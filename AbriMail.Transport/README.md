@@ -29,8 +29,15 @@ In summary, AbriMail.Transport’s IMAP implementation log in to the server, sel
 ```csharp
 using AbriMail.Transport;
 
-// Create settings (example for Fastmail)
-var settings = ImapSettings.Presets.Fastmail("user@fastmail.com", "password");
+// Create settings (example for Gmail)
+var settings = new ImapSettings
+{
+    Host = "imap.gmail.com",
+    Port = 993,
+    Username = "user@gmail.com",
+    Password = "app-password"
+};
+
 using var client = new ImapClient();
 
 try
@@ -42,14 +49,16 @@ try
     var inbox = await client.SelectMailboxAsync();
     Console.WriteLine($"Total: {inbox.MessageCount}, Recent: {inbox.RecentCount}");
 
-    // Fetch raw headers for first 5 messages
-    var rawHeaders = await client.FetchRawHeadersAsync(1, 5);
-    foreach (var hdr in rawHeaders)
-        Console.WriteLine(hdr);
+    // Fetch headers for first 5 messages
+    var headers = await client.FetchHeadersAsync(1, 5);
+    foreach (var header in headers)
+    {
+        Console.WriteLine($"From: {header.From}, Subject: {header.Subject}");
+    }
 
-    // Fetch full raw message #1
-    var rawMsg = await client.FetchRawMessageAsync(1);
-    Console.WriteLine(rawMsg);
+    // Fetch full message #1
+    var message = await client.FetchMessageAsync(1);
+    Console.WriteLine($"Body: {message.Body}");
 
     // Logout when done
     await client.LogoutAsync();
@@ -76,9 +85,7 @@ catch (ImapException ex)
 
 - `SelectMailboxAsync(string mailbox = "INBOX") -> MailboxInfo`
 - `FetchHeadersAsync(int start, int count) -> List<EmailHeader>`
-- `FetchRawHeadersAsync(int start, int count) -> List<string>`
 - `FetchMessageAsync(int messageId) -> EmailMessage`
-- `FetchRawMessageAsync(int messageId) -> string`
 
 ### SMTP (Email Sending)
 

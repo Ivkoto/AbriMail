@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AbriMail.App\AbriMail.App.csproj" />
-    <ProjectReference Include="..\AbriMail.Transport\AbriMail.Transport.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -16,4 +15,3 @@
   </ItemGroup>
 
 </Project>
- 

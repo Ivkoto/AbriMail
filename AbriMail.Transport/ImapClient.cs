@@ -48,6 +48,7 @@ public class ImapClient : IImapClient, IAsyncDisposable
 
             // Read server greeting and ensure it's untagged OK
             var greetingLine = await _reader!.ReadLineAsync();
+
             if (greetingLine is null || !greetingLine.StartsWith("* OK"))
             {
                 throw new InvalidOperationException($"Unexpected IMAP greeting: {greetingLine}");
@@ -74,7 +75,7 @@ public class ImapClient : IImapClient, IAsyncDisposable
             throw new InvalidOperationException("Not connected to IMAP server");
 
         if (_isAuthenticated)
-            throw new InvalidOperationException("Already authenticated");
+            return;
 
         var tag = GetNextTag();
         var command = $"{tag} LOGIN \"{username}\" \"{password}\"\r\n";
@@ -85,6 +86,7 @@ public class ImapClient : IImapClient, IAsyncDisposable
         // Parse tagged response - confirm success
         var lines = response.Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries);
         var taggedLine = lines.FirstOrDefault(l => l.StartsWith(tag));
+
         if (taggedLine == null || !taggedLine.StartsWith($"{tag} OK"))
         {
             throw new ImapException($"IMAP login failed: {taggedLine ?? response}")
@@ -169,6 +171,7 @@ public class ImapClient : IImapClient, IAsyncDisposable
 
         var linesList = response.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
         var taggedResponse = linesList.FirstOrDefault(l => l.StartsWith(tag));
+
         if (taggedResponse == null || !taggedResponse.StartsWith($"{tag} OK"))
         {
             throw new ImapException($"Failed to fetch headers: {taggedResponse ?? response}")
@@ -199,6 +202,7 @@ public class ImapClient : IImapClient, IAsyncDisposable
 
         var msgLines = responseMsg.Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries);
         var taggedMsgResp = msgLines.FirstOrDefault(l => l.StartsWith(tag));
+
         if (taggedMsgResp == null || !taggedMsgResp.StartsWith($"{tag} OK"))
         {
             throw new ImapException($"Failed to fetch message {messageId}: {taggedMsgResp ?? responseMsg}")
@@ -208,105 +212,16 @@ public class ImapClient : IImapClient, IAsyncDisposable
             };
         }
 
-        var message = ParseEmailMessage(responseMsg, messageId);
-        message.ParseRawContent();
+        var message = ParseEmailMessage(responseMsg, messageId);        
+        message.ParseRawContent(); //TODO: @IvayloK move this method out of the model!
 
         return message;
     }
 
     /// <summary>
-    /// Fetches the full raw headers for a range of messages.
-    /// </summary>
-    /// <param name="start">Starting message number (1-based)</param>
-    /// <param name="count">Number of messages to fetch</param>
-    /// <returns>List of raw header text blocks</returns>
-    public async Task<List<string>> FetchRawHeadersAsync(int start, int count)
-    {
-        if (!_isAuthenticated)
-            throw new InvalidOperationException("Not authenticated with IMAP server");
-
-        var end = start + count - 1;
-        var tag = GetNextTag();
-        var command = $"{tag} FETCH {start}:{end} (BODY[HEADER])\r\n";
-        await _writer!.WriteAsync(command);
-        var response = await ReadResponseAsync();
-
-        var lines = response.Split(["\r\n", "\n"], StringSplitOptions.None);
-        var headers = new List<string>();
-        var builder = new StringBuilder();
-        bool inBlock = false;
-
-        foreach (var line in lines)
-        {
-            // Detect start of header literal
-            if (line.Contains("BODY[HEADER]") && line.Contains("{"))
-            {
-                inBlock = true;
-                builder.Clear();
-                continue;
-            }
-            // Detect end of a block when next untagged or tagged response appears
-            if (inBlock && (line.StartsWith("*") || line.StartsWith(tag)))
-            {
-                headers.Add(builder.ToString());
-                inBlock = false;
-
-                if (line.StartsWith(tag)) break;
-                continue;
-            }
-            if (inBlock)
-            {
-                builder.AppendLine(line);
-            }
-        }
-
-        return headers;
-    }
-
-    /// <summary>
-    /// Fetches the full raw RFC822 message (headers+body) for the specified message.
-    /// </summary>
-    /// <param name="messageId">Message sequence number (1-based)</param>
-    /// <returns>Full raw email message content</returns>
-    public async Task<string> FetchRawMessageAsync(int messageId)
-    {
-        if (!_isAuthenticated)
-            throw new InvalidOperationException("Not authenticated with IMAP server");
-
-        var tag = GetNextTag();
-        var command = $"{tag} FETCH {messageId} (BODY[])\r\n";
-        await _writer!.WriteAsync(command);
-        var response = await ReadResponseAsync();
-
-        // Extract the literal block content
-        var lines = response.Split(["\r\n", "\n"], StringSplitOptions.None);
-        var builder = new StringBuilder();
-        bool inBlock = false;
-        foreach (var line in lines)
-        {
-            if (!inBlock)
-            {
-                // Detect start of BODY[] literal
-                if (line.Contains("BODY[]") && line.Contains("{"))
-                {
-                    inBlock = true;
-                    continue;
-                }
-            }
-            else
-            {
-                if (line.StartsWith(tag)) break;
-                builder.AppendLine(line);
-            }
-        }
-
-        return builder.ToString();
-    }
-
-    /// <summary>
     /// Logs out and disconnects from the IMAP server.
     /// </summary>
-    public async Task LogoutAsync()
+    public async Task LogoutAsync() 
     {
         if (!_isConnected)
             return;
@@ -337,22 +252,11 @@ public class ImapClient : IImapClient, IAsyncDisposable
     }
 
     /// <summary>
-    /// Connects to the IMAP server using the provided settings.
-    /// </summary>
-    /// <param name="settings">IMAP connection settings</param>
-    public async Task ConnectAsync(ImapSettings settings)
-    {
-        settings.Validate();
-        await ConnectAsync(settings.Host, settings.Port);
-    }
-
-    /// <summary>
     /// Connects and authenticates using the provided settings.
     /// </summary>
     /// <param name="settings">IMAP connection settings including credentials</param>
     public async Task ConnectAndLoginAsync(ImapSettings settings)
     {
-        settings.Validate();
         await ConnectAsync(settings.Host, settings.Port);
         await LoginAsync(settings.Username, settings.Password);
     }
@@ -452,7 +356,7 @@ public class ImapClient : IImapClient, IAsyncDisposable
         };
     }
 
-    private string ExtractFromEnvelope(string envelope, string field)
+    private static string ExtractFromEnvelope(string envelope, string field)
     {
         // Simplified envelope parsing
         // In a real implementation, we'll properly parse the IMAP ENVELOPE structure
